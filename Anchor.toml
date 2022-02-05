@@ -1,12 +1,12 @@
 [programs.localnet]
-nft_reserve = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+nft_reserve = "8vdqBghr2zC4uGeajcXHHD8XNpuAavtdbYUy5LcGdfm3"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
 cluster = "localnet"
-wallet = "C:\\Users\\Thornton\\.config/solana/id.json"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
