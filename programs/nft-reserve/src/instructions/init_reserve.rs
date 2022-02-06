@@ -36,12 +36,12 @@ pub struct InitReserve<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<InitReserve>, token_store_bump: u8, token_authority_bump: u8) -> ProgramResult {
+pub fn handler(ctx: Context<InitReserve>, token_store_bump: u8, token_authority_bump: u8, repurchase_quantity: u64) -> ProgramResult {
     let reserve = &mut ctx.accounts.reserve;
-
+    
     reserve.manager = ctx.accounts.manager.key();
     reserve.redeem_count = 0;
-
+    reserve.repurchase_quantity = repurchase_quantity;
     msg!("Reserve successfully initialised");
     Ok(())
 }
