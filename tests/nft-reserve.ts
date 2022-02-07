@@ -3,6 +3,7 @@ import { Program } from '@project-serum/anchor';
 import { NftReserve } from '../target/types/nft_reserve';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, Token, AuthorityType } from "@solana/spl-token";
+import { assert } from "chai";
 
 function enc(str: string) {
   return Buffer.from(anchor.utils.bytes.utf8.encode(str))
@@ -24,8 +25,9 @@ describe('nft-reserve', () => {
 
   let reserveAccount: anchor.web3.Keypair, managerAccount: anchor.web3.Keypair;
   let tokenMint: Token, mintAuthority: anchor.web3.Keypair, managerTokenAccount: PublicKey;
-  let repurchaseQuantity = 1, nftMintA: Token, redeemerAccount: anchor.web3.Keypair;
+  let nftMintA: Token, redeemerAccount: anchor.web3.Keypair;
   let redeemerTokenAccount: PublicKey, redeemerNftAccount: PublicKey;
+  let repurchaseQuantity = 1, managerInitTokenBal = 1000;
   beforeEach(async () => {
     reserveAccount = anchor.web3.Keypair.generate();
     managerAccount = anchor.web3.Keypair.generate();
@@ -62,7 +64,7 @@ describe('nft-reserve', () => {
       managerTokenAccount,
       mintAuthority.publicKey,
       [mintAuthority],
-      1000
+      managerInitTokenBal
     );
 
     await nftMintA.mintTo(
@@ -88,8 +90,8 @@ describe('nft-reserve', () => {
     ], program.programId);
     let [store, store_bump] = await PublicKey.findProgramAddress([
       enc("token-store"), reserveAccount.publicKey.toBytes(),
-    ], program.programId);
-    const tx = await program.rpc.initReserve(store_bump, auth_bump, new anchor.BN(repurchaseQuantity), {
+    ], program.programId);  
+    await program.rpc.initReserve(store_bump, auth_bump, new anchor.BN(repurchaseQuantity), {
       accounts: {
         reserve: reserveAccount.publicKey,
         manager: managerAccount.publicKey,
@@ -109,11 +111,17 @@ describe('nft-reserve', () => {
 
   it('Initialize the reserve', async () => {
     await initReserve();
+    
+    // post tx assertions
+    let reserve = await program.account.reserve.fetch(reserveAccount.publicKey);
+    assert.ok(reserve.redeemCount.toNumber() === 0);
+    assert.ok(reserve.manager.equals(managerAccount.publicKey));
+    assert.ok(reserve.repurchaseQuantity.toNumber() === 1);
   });
 
-  async function fundReserve() {
+  async function initAndFundReserve(fundAmount: number) {
     let {auth, auth_bump, store, store_bump} = await initReserve();
-    const tx = await program.rpc.fundReserve(store_bump, new anchor.BN(10), {
+    await program.rpc.fundReserve(store_bump, new anchor.BN(fundAmount), {
       accounts: {
         reserve: reserveAccount.publicKey,
         tokenStore: store,
@@ -127,17 +135,34 @@ describe('nft-reserve', () => {
   }
 
   it('Funds the reserve', async() => {
-    await fundReserve();
+    let fundAmount = 10;
+
+    // pre tx assertions
+    let tokenAccount = await tokenMint.getAccountInfo(managerTokenAccount);
+    assert.ok(tokenAccount.amount.toNumber() === managerInitTokenBal);
+
+    await initAndFundReserve(fundAmount);
+
+    // post tx assertions
+    tokenAccount = await tokenMint.getAccountInfo(managerTokenAccount);
+    assert.ok(tokenAccount.amount.toNumber() === managerInitTokenBal - fundAmount);
   })
 
   it('Redeems an NFT', async() => {
-    let {auth, auth_bump, store, store_bump} = await fundReserve();
-    const tx = await program.rpc.redeemNft(store_bump, auth_bump, {
+    let {auth, auth_bump, store, store_bump} = await initAndFundReserve(10);
+
+    // pre tx assertions
+    let nftAccount = await nftMintA.getAccountInfo(redeemerNftAccount);
+    assert.ok(nftAccount.amount.toNumber() === 1);
+    let tokenAccount = await tokenMint.getAccountInfo(redeemerTokenAccount);
+    assert.ok(tokenAccount.amount.toNumber() === 0);
+
+    await program.rpc.redeemNft(store_bump, auth_bump, {
       accounts: {
         reserve: reserveAccount.publicKey,
         tokenStore: store,
         tokenAuthority: auth,
-        recipientTokenAccount: managerTokenAccount,
+        recipientTokenAccount: redeemerTokenAccount,
         nftTokenAccount: redeemerNftAccount,
         nftMint: nftMintA.publicKey,
         redeemer: redeemerAccount.publicKey,
@@ -145,5 +170,11 @@ describe('nft-reserve', () => {
       },
       signers: [redeemerAccount]
     });
+
+    // post tx assertions
+    nftAccount = await nftMintA.getAccountInfo(redeemerNftAccount);
+    assert.ok(nftAccount.amount.toNumber() === 0);
+    tokenAccount = await tokenMint.getAccountInfo(redeemerTokenAccount);
+    assert.ok(tokenAccount.amount.toNumber() === repurchaseQuantity);
   })
 });
