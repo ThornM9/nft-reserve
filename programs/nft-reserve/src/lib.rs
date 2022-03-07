@@ -10,8 +10,8 @@ pub mod state;
 pub mod nft_reserve {
     use super::*;
 
-    pub fn init_reserve(ctx: Context<InitReserve>, token_authority_bump: u8, repurchase_quantity: u64, whitelisted: bool) -> Result<()> {
-        instructions::init_reserve::handler(ctx, token_authority_bump, repurchase_quantity, whitelisted)
+    pub fn init_reserve(ctx: Context<InitReserve>, token_authority_bump: u8, repurchase_quantity: u64) -> Result<()> {
+        instructions::init_reserve::handler(ctx, token_authority_bump, repurchase_quantity)
     }
 
     pub fn set_whitelist(ctx: Context<SetWhitelist>, whitelist_bump: u8, root: [u8; 32]) -> Result<()> {

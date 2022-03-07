@@ -47,13 +47,12 @@ pub struct InitReserve<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<InitReserve>, _token_authority_bump: u8, repurchase_quantity: u64, whitelisted: bool) -> Result<()> {
+pub fn handler(ctx: Context<InitReserve>, _token_authority_bump: u8, repurchase_quantity: u64) -> Result<()> {
     let reserve = &mut ctx.accounts.reserve;
     
     reserve.manager = ctx.accounts.manager.key();
     reserve.redeem_count = 0;
     reserve.repurchase_quantity = repurchase_quantity;
-    reserve.whitelisted = whitelisted;
 
     let whitelist = &mut ctx.accounts.whitelist;
     let res = ctx.bumps.get("whitelist").ok_or("couldn't find whitelist bump");
