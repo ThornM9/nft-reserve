@@ -24,6 +24,7 @@ pub struct RedeemNft<'info> {
         ],
         bump = token_authority_bump,
     )]
+    /// CHECK: This is not dangerous because only the key is used and it's a PDA checked by anchor
     pub token_authority: AccountInfo<'info>,
     #[account(mut)]
     pub recipient_token_account: Account<'info, TokenAccount>,
@@ -39,7 +40,7 @@ pub struct RedeemNft<'info> {
 }
 
 impl<'info> RedeemNft<'info> {
-    fn transfer_ctx(&self, token_authority_bump: u8) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
+    fn transfer_ctx(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
         let cpi_accounts = Transfer {
             from: self.token_store.to_account_info(),
             to: self.recipient_token_account.to_account_info(),
@@ -58,22 +59,22 @@ impl<'info> RedeemNft<'info> {
     }
 }
 
-pub fn handler(ctx: Context<RedeemNft>, token_store_bump: u8, token_authority_bump: u8) -> ProgramResult {
+pub fn handler(ctx: Context<RedeemNft>, _token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
     // check we're burning an nft and not a random spl token
     assert_eq!(ctx.accounts.nft_mint.supply, 1);
     assert_eq!(ctx.accounts.nft_mint.decimals, 0);
     assert_eq!(ctx.accounts.nft_mint.mint_authority, COption::None);
 
-    let reserve = &ctx.accounts.reserve;
     // burn the nft
     token::burn(ctx.accounts.burn_ctx(), 1)?;
 
     // send tokens from store to redeemer
     token::transfer(
         ctx.accounts
-            .transfer_ctx(token_authority_bump)
-            .with_signer(&[&[b"token-authority".as_ref(), reserve.key().as_ref(), &[token_authority_bump]]]), 
+            .transfer_ctx()
+            .with_signer(&[&[b"token-authority".as_ref(), ctx.accounts.reserve.key().as_ref(), &[token_authority_bump]]]), 
         ctx.accounts.reserve.repurchase_quantity
     )?;
+    ctx.accounts.reserve.redeem_count = ctx.accounts.reserve.redeem_count + 1;
     Ok(())
 }

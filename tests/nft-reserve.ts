@@ -84,19 +84,24 @@ describe('nft-reserve', () => {
 
   })
 
-  async function initReserve() {
+  async function initReserve(whitelisted: boolean) {
     let [auth, auth_bump] = await PublicKey.findProgramAddress([
       enc("token-authority"), reserveAccount.publicKey.toBytes(),
     ], program.programId);
     let [store, store_bump] = await PublicKey.findProgramAddress([
       enc("token-store"), reserveAccount.publicKey.toBytes(),
-    ], program.programId);  
-    await program.rpc.initReserve(store_bump, auth_bump, new anchor.BN(repurchaseQuantity), {
+    ], program.programId);
+    let [whitelist, whitelist_bump] = await PublicKey.findProgramAddress([
+      enc("whitelist"), reserveAccount.publicKey.toBytes(),
+    ], program.programId)
+    
+    await program.rpc.initReserve(auth_bump, new anchor.BN(repurchaseQuantity), whitelisted, {
       accounts: {
         reserve: reserveAccount.publicKey,
         manager: managerAccount.publicKey,
         tokenAuthority: auth,
         tokenStore: store,
+        whitelist: whitelist,
         tokenMint: tokenMint.publicKey,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
@@ -110,8 +115,8 @@ describe('nft-reserve', () => {
   }
 
   it('Initialize the reserve', async () => {
-    await initReserve();
-    
+    await initReserve(false);
+
     // post tx assertions
     let reserve = await program.account.reserve.fetch(reserveAccount.publicKey);
     assert.ok(reserve.redeemCount.toNumber() === 0);
@@ -120,7 +125,7 @@ describe('nft-reserve', () => {
   });
 
   async function initAndFundReserve(fundAmount: number) {
-    let {auth, auth_bump, store, store_bump} = await initReserve();
+    let {auth, auth_bump, store, store_bump} = await initReserve(false);
     await program.rpc.fundReserve(store_bump, new anchor.BN(fundAmount), {
       accounts: {
         reserve: reserveAccount.publicKey,
@@ -172,9 +177,11 @@ describe('nft-reserve', () => {
     });
 
     // post tx assertions
+    let reserve = await program.account.reserve.fetch(reserveAccount.publicKey);
     nftAccount = await nftMintA.getAccountInfo(redeemerNftAccount);
     assert.ok(nftAccount.amount.toNumber() === 0);
     tokenAccount = await tokenMint.getAccountInfo(redeemerTokenAccount);
     assert.ok(tokenAccount.amount.toNumber() === repurchaseQuantity);
+    assert.ok(reserve.redeemCount.toNumber() === 1);
   })
 });

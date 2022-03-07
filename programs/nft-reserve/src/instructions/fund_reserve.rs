@@ -32,7 +32,7 @@ impl<'info> FundReserve<'info> {
     }
 }
 
-pub fn handler(ctx: Context<FundReserve>, token_store_bump: u8, amount: u64) -> ProgramResult {
+pub fn handler(ctx: Context<FundReserve>, _token_store_bump: u8, amount: u64) -> Result<()> {
     token::transfer(ctx.accounts.transfer_ctx(), amount)?;
     Ok(())
 }
