@@ -21,7 +21,6 @@ pub struct SetWhitelist<'info> {
     pub payer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
 }
 
 pub fn handler(ctx: Context<SetWhitelist>, _whitelist_bump: u8, root: [u8; 32]) -> Result<()> {
