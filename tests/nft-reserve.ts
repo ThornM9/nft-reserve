@@ -3,9 +3,14 @@ import { Program } from '@project-serum/anchor';
 import { NftReserve } from '../target/types/nft_reserve';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, Token, AuthorityType } from "@solana/spl-token";
-import { assert, expect } from "chai";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { MerkleTree } from 'merkletreejs';
 import keccak256 from 'keccak256';
+
+const expect = chai.expect;
+const assert = chai.assert;
+chai.use(chaiAsPromised);
 
 function enc(str: string) {
   return Buffer.from(anchor.utils.bytes.utf8.encode(str))
@@ -122,7 +127,7 @@ describe('nft-reserve', () => {
     }
   }
 
-  xit('Initialize the reserve', async () => {
+  it('Initialize the reserve', async () => {
     await initReserve();
 
     // post tx assertions
@@ -166,21 +171,27 @@ describe('nft-reserve', () => {
         systemProgram: anchor.web3.SystemProgram.programId,
       },
       signers: [managerAccount],
-    })
+    });
+
+    return tree;
   } 
 
-  async function redeemNft(nftMintKey: PublicKey, nftAccountKey: PublicKey) {
+  async function redeemNft(nftMintKey: PublicKey, nftAccountKey: PublicKey, proof: Buffer[]) {
     let [auth, auth_bump] = await PublicKey.findProgramAddress([
       enc("token-authority"), reserveAccount.publicKey.toBytes(),
     ], program.programId);
     let [store, store_bump] = await PublicKey.findProgramAddress([
       enc("token-store"), reserveAccount.publicKey.toBytes(),
     ], program.programId);
+    let [whitelist, whitelist_bump] = await PublicKey.findProgramAddress([
+      enc("whitelist"), reserveAccount.publicKey.toBytes(),
+    ], program.programId);
 
-    await program.rpc.redeemNft(store_bump, auth_bump, {
+    await program.rpc.redeemNft(store_bump, auth_bump, whitelist_bump, proof, {
       accounts: {
         reserve: reserveAccount.publicKey,
         tokenStore: store,
+        whitelist: whitelist,
         tokenAuthority: auth,
         recipientTokenAccount: redeemerTokenAccount,
         nftTokenAccount: nftAccountKey,
@@ -193,7 +204,7 @@ describe('nft-reserve', () => {
   }
 
 
-  xit('Funds the reserve', async() => {
+  it('Funds the reserve', async() => {
     let fundAmount = 10;
 
     // pre tx assertions
@@ -207,16 +218,23 @@ describe('nft-reserve', () => {
     assert.ok(tokenAccount.amount.toNumber() === managerInitTokenBal - fundAmount);
   })
 
-  xit('Redeems an NFT', async() => {
+  it('Redeems an NFT', async() => {
     let {auth, auth_bump, store, store_bump} = await initAndFundReserve(10);
-
+    const leaves = [
+      nftMintA.publicKey.toBuffer(),
+    ];
+    addRandomLeaves(leaves, 10);
+    const tree = await setWhitelist(leaves);
+    const leaf = keccak256(nftMintA.publicKey.toBuffer());
+    const proof: Buffer[] = tree.getProof(leaf).map((p) => p.data);
+    
     // pre tx assertions
     let nftAccount = await nftMintA.getAccountInfo(redeemerNftAccountA);
     assert.ok(nftAccount.amount.toNumber() === 1);
     let tokenAccount = await tokenMint.getAccountInfo(redeemerTokenAccount);
     assert.ok(tokenAccount.amount.toNumber() === 0);
 
-    await redeemNft(nftMintA.publicKey, redeemerNftAccountA);
+    await redeemNft(nftMintA.publicKey, redeemerNftAccountA, proof);
 
     // post tx assertions
     let reserve = await program.account.reserve.fetch(reserveAccount.publicKey);
@@ -240,7 +258,7 @@ describe('nft-reserve', () => {
 
     const leaves: Buffer[] = [];
 
-    addRandomLeaves(leaves, 100);
+    addRandomLeaves(leaves, 10);
     await setWhitelist(leaves);
   })
 
@@ -251,10 +269,11 @@ describe('nft-reserve', () => {
       nftMintA.publicKey.toBuffer(),
     ];
 
-    addRandomLeaves(leaves, 100);
-    await setWhitelist(leaves);
-
-    await redeemNft(nftMintA.publicKey, redeemerNftAccountA);
+    addRandomLeaves(leaves, 10);
+    let tree = await setWhitelist(leaves);
+    const leaf = keccak256(nftMintA.publicKey.toBuffer());
+    const proof: Buffer[] = tree.getProof(leaf).map((p) => p.data);
+    await redeemNft(nftMintA.publicKey, redeemerNftAccountA, proof);
   })
 
   it("Can't redeem NFT that isn't whitelisted", async() => {
@@ -264,9 +283,10 @@ describe('nft-reserve', () => {
       nftMintA.publicKey.toBuffer(),
     ];
 
-    addRandomLeaves(leaves, 100);
-    await setWhitelist(leaves);
-
-    expect(await redeemNft(nftMintB.publicKey, redeemerNftAccountB)).to.throw("Error")
+    addRandomLeaves(leaves, 10);
+    const tree = await setWhitelist(leaves);
+    const leaf = keccak256(nftMintB.publicKey.toBuffer());
+    const proof: Buffer[] = tree.getProof(leaf).map((p) => p.data);
+    expect(redeemNft(nftMintB.publicKey, redeemerNftAccountB, proof)).to.be.rejectedWith(Error);
   })
 });

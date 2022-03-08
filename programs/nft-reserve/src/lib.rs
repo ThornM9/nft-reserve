@@ -22,7 +22,7 @@ pub mod nft_reserve {
         instructions::fund_reserve::handler(ctx, token_store_bump, amount)
     }
 
-    pub fn redeem_nft(ctx: Context<RedeemNft>, token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
-        instructions::redeem_nft::handler(ctx, token_store_bump, token_authority_bump)
+    pub fn redeem_nft(ctx: Context<RedeemNft>, token_store_bump: u8, token_authority_bump: u8, whitelist_bump: u8, whitelist_proof: Vec<[u8; 32]>) -> Result<()> {
+        instructions::redeem_nft::handler(ctx, token_store_bump, token_authority_bump, whitelist_bump, whitelist_proof)
     }
 }

@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 use crate::state::*;
-use anchor_spl::token::{Token};
 
 #[derive(Accounts)]
 #[instruction(whitelist_bump: u8, _root: [u8; 32])]
@@ -9,11 +8,12 @@ pub struct SetWhitelist<'info> {
     pub reserve: Box<Account<'info, Reserve>>,
 
     #[account(
+        mut,
         seeds = [
             b"whitelist".as_ref(),
             reserve.key().as_ref(),
         ],
-        bump,
+        bump=whitelist_bump,
     )]
     pub whitelist: Box<Account<'info, Whitelist>>,
 
