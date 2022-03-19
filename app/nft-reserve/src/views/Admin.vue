@@ -1,15 +1,10 @@
 <template>
-  <div>Admin</div>
-  <ConfigPane />
-  <div v-if="!wallet">Please connect wallet</div>
+  <div v-if="!wallet" class="text-white text-2xl text-center">
+    Please connect wallet
+  </div>
   <div v-else>
-    <!-- <div class="flex mb-10 w-full justify-center">
-      <button class="is-primary mr-5" @click="showNewFarm = !showNewFarm">
-        New farm
-      </button>
-      <button @click="refreshFarms">Refetch farms</button>
-    </div> -->
-    <div>
+    <TestMint class="text-white" />
+    <div class="text-white">
       <p>New Reserve</p>
       <form @submit.prevent="initReserve">
         <div>
@@ -26,14 +21,13 @@ import { defineComponent, onMounted, watch, ref } from "vue";
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { RESERVE_PROGRAM_ID } from "../lib/constants";
 import { ReserveClient } from "../lib/reserve";
-import ConfigPane from "@/components/ConfigPane.vue";
-import InitReserve from "@/components/InitReserve.vue";
+import TestMint from "@/components/TestMint.vue";
 import useWallet from "@/composables/wallet";
 import useCluster from "@/composables/cluster";
 
 export default defineComponent({
   components: {
-    ConfigPane,
+    TestMint,
   },
   setup() {
     const { wallet, getWallet } = useWallet();
@@ -76,8 +70,6 @@ export default defineComponent({
         new PublicKey("75nwSeTyY86fu1Ttp1dGv7W9XSnYrLirLCXUmC8qkCPa"),
         10
       );
-
-      console.log("tm1");
     };
     return {
       wallet,

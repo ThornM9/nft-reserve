@@ -15,6 +15,8 @@ module.exports = {
         w300: "300px",
       },
       colors: {
+        secondary: "#01172F",
+        primary: "#CB429F",
         rb: {
           yellow: "rgb(242,196,10)",
           green: "rgb(0,255,0)",

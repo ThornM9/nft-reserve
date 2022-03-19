@@ -7,6 +7,7 @@
       :url="i.url"
       :class="{ active: path === i.url }"
     />
+    <ConfigPane />
   </nav>
 </template>
 
@@ -14,9 +15,10 @@
 import { defineComponent, computed } from "vue";
 import { useRoute } from "vue-router";
 import NavButton from "@/components/NavButton.vue";
+import ConfigPane from "@/components/ConfigPane.vue";
 
 export default defineComponent({
-  components: { NavButton },
+  components: { NavButton, ConfigPane },
   setup() {
     const route = useRoute();
     const path = computed(() => route.path);
@@ -37,6 +39,6 @@ export default defineComponent({
 
 <style scoped>
 .active {
-  @apply text-blue-600;
+  @apply text-white;
 }
 </style>
