@@ -13,7 +13,7 @@
 }
 
 .outlined-btn {
-  @apply bg-transparent text-white py-2 px-4 border rounded;
+  @apply bg-transparent text-white py-2 px-4 border-2 rounded;
 }
 </style>
 

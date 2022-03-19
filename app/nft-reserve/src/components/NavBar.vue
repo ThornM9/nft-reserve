@@ -25,7 +25,8 @@ export default defineComponent({
 
     const menu = [
       { name: "/", url: "/" },
-      { name: "Admin", url: "/admin" },
+      { name: "Create", url: "/create" },
+      { name: "Manage", url: "/manage" },
       { name: "User", url: "/user" },
     ];
 

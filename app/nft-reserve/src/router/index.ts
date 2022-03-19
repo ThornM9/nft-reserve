@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import User from "@/views/User.vue";
-import Admin from "@/views/Admin.vue";
+import CreateReserve from "@/views/CreateReserve.vue";
+import ManageReserve from "@/views/ManageReserve.vue";
 import Home from "@/views/Home.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -10,9 +11,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Home,
   },
   {
-    path: "/admin",
-    name: "Admin",
-    component: Admin,
+    path: "/create",
+    name: "Create Reserve",
+    component: CreateReserve,
+  },
+  {
+    path: "/manage",
+    name: "Manage Reserve",
+    component: ManageReserve,
   },
   {
     path: "/user",

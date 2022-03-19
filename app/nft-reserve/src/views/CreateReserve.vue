@@ -4,17 +4,46 @@
   </div>
   <div v-else>
     <TestMint class="text-white" />
-    <div class="text-white">
-      <p>New Reserve</p>
-      <form @submit.prevent="initReserve">
-        <div>
-          <!-- <label for=" -->
-        </div>
-        <button class="mb-5" type="submit">Create Reserve</button>
-      </form>
+    <div class="flex justify-center mt-10 text-white">
+      <div class="card border-primary w-1/2 text-center">
+        <h1 class="text-center mb-5 text-xl">
+          <strong>Create a New Reserve Treasury</strong>
+        </h1>
+        <form @submit.prevent="initReserve">
+          <div>
+            <label for="tokenMint">Treasury Token Mint</label>
+            <input
+              type="text"
+              id="tokenMint"
+              v-model="tokenMint"
+              class="text-input focus:border-primary"
+            />
+          </div>
+          <div>
+            <label for="repurchaseQuantity">NFT Purchase Price</label>
+            <input
+              type="text"
+              id="repurchaseQuantity"
+              v-model="repurchaseQuantity"
+              class="text-input focus:border-primary"
+            />
+          </div>
+          <button class="mt-5 outlined-btn border-primary" type="submit">
+            Create Reserve
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.text-input {
+  @apply bg-gray-200 appearance-none border-2 border-gray-200 
+  rounded w-full py-2 px-4 text-gray-700 leading-tight 
+  focus:outline-none focus:bg-white;
+}
+</style>
 
 <script lang="ts">
 import { defineComponent, onMounted, watch, ref } from "vue";
@@ -46,6 +75,10 @@ export default defineComponent({
       }
     });
 
+    // reserve variables
+    const tokenMint = ref<string>("");
+    const repurchaseQuantity = ref<string>("");
+
     let rc: ReserveClient;
     const newWallet = async () => {
       let reserveIdl = await (await fetch("reserve_idl.json")).json();
@@ -67,16 +100,16 @@ export default defineComponent({
       let reserveAccount = Keypair.generate();
       rc.initReserve(
         reserveAccount,
-        new PublicKey("75nwSeTyY86fu1Ttp1dGv7W9XSnYrLirLCXUmC8qkCPa"),
-        10
+        new PublicKey(tokenMint.value),
+        parseFloat(repurchaseQuantity.value)
       );
     };
     return {
       wallet,
       initReserve,
+      tokenMint,
+      repurchaseQuantity,
     };
   },
 });
 </script>
-
-<style scoped></style>
