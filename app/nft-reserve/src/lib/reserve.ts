@@ -1,12 +1,6 @@
 import * as anchor from "@project-serum/anchor";
-import {
-  Connection,
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-  TransactionInstruction,
-} from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Token } from "@solana/spl-token";
 import { NftReserve } from "./nft_reserve_type";
 import { enc } from "@/lib/utils";
 import { RESERVE_PROGRAM_ID } from "./constants";
@@ -61,11 +55,11 @@ export class ReserveClient {
       [enc("token-authority"), reserveAccount.publicKey.toBytes()],
       RESERVE_PROGRAM_ID
     );
-    const [store, store_bump] = await PublicKey.findProgramAddress(
+    const [store] = await PublicKey.findProgramAddress(
       [enc("token-store"), reserveAccount.publicKey.toBytes()],
       RESERVE_PROGRAM_ID
     );
-    const [whitelist, whitelist_bump] = await PublicKey.findProgramAddress(
+    const [whitelist] = await PublicKey.findProgramAddress(
       [enc("whitelist"), reserveAccount.publicKey.toBytes()],
       RESERVE_PROGRAM_ID
     );
@@ -88,5 +82,23 @@ export class ReserveClient {
         signers: [reserveAccount],
       }
     );
+  }
+
+  async getReserveBalance(
+    reservePk: PublicKey,
+    tokenMintPk: PublicKey
+  ): Promise<number> {
+    const [store] = await PublicKey.findProgramAddress(
+      [enc("token-store"), reservePk.toBytes()],
+      RESERVE_PROGRAM_ID
+    );
+    const tokenMint = new Token(
+      this.provider.connection,
+      tokenMintPk,
+      TOKEN_PROGRAM_ID,
+      Keypair.generate()
+    );
+    const tokenAccount = await tokenMint.getAccountInfo(store);
+    return tokenAccount.amount.toNumber();
   }
 }

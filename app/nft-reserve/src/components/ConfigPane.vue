@@ -6,7 +6,7 @@
           required
           id="cluster"
           v-model="chosenCluster"
-          class="select bg-secondary focus:bg-secondary form-select border-primary text-primary"
+          class="select bg-secondary focus:bg-secondary form-select border-primary text-pb"
         >
           <option :value="Cluster.Mainnet">Mainnet</option>
           <option :value="Cluster.Devnet">Devnet</option>
@@ -19,7 +19,7 @@
           required
           id="wallet"
           v-model="chosenWallet"
-          class="select bg-secondary focus:bg-secondary form-select border-primary text-primary text-center"
+          class="select bg-secondary focus:bg-secondary form-select border-primary text-pb text-center"
         >
           <option class="text-gray-500" :value="null">Choose wallet</option>
           <option :value="WalletName.Phantom">Phantom</option>

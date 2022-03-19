@@ -53,6 +53,7 @@ pub fn handler(ctx: Context<InitReserve>, _token_authority_bump: u8, repurchase_
     reserve.manager = ctx.accounts.manager.key();
     reserve.redeem_count = 0;
     reserve.repurchase_quantity = repurchase_quantity;
+    reserve.token_mint = ctx.accounts.token_mint.key();
 
     let whitelist = &mut ctx.accounts.whitelist;
     let res = ctx.bumps.get("whitelist").ok_or("couldn't find whitelist bump");

@@ -235,6 +235,10 @@
           {
             "name": "repurchaseQuantity",
             "type": "u64"
+          },
+          {
+            "name": "tokenMint",
+            "type": "publicKey"
           }
         ]
       }

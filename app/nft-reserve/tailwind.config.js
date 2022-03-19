@@ -1,5 +1,6 @@
 module.exports = {
-  purge: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
+  // purge: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
+  content: ["./public/**/*.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
@@ -17,6 +18,7 @@ module.exports = {
       colors: {
         secondary: "#01172F",
         primary: "#CB429F",
+        pb: "#ff54c9",
         rb: {
           yellow: "rgb(242,196,10)",
           green: "rgb(0,255,0)",

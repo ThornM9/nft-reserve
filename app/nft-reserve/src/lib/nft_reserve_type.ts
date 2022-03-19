@@ -1,537 +1,527 @@
 export type NftReserve = {
-  "version": "0.1.0",
-  "name": "nft_reserve",
-  "instructions": [
+  version: "0.1.0";
+  name: "nft_reserve";
+  instructions: [
     {
-      "name": "initReserve",
-      "accounts": [
+      name: "initReserve";
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": true
+          name: "reserve";
+          isMut: true;
+          isSigner: true;
         },
         {
-          "name": "manager",
-          "isMut": true,
-          "isSigner": true
+          name: "manager";
+          isMut: true;
+          isSigner: true;
         },
         {
-          "name": "tokenAuthority",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenAuthority";
+          isMut: false;
+          isSigner: false;
         },
         {
-          "name": "tokenStore",
-          "isMut": true,
-          "isSigner": false
+          name: "tokenStore";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "whitelist",
-          "isMut": true,
-          "isSigner": false
+          name: "whitelist";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenMint";
+          isMut: false;
+          isSigner: false;
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          name: "rent";
+          isMut: false;
+          isSigner: false;
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          name: "systemProgram";
+          isMut: false;
+          isSigner: false;
         }
-      ],
-      "args": [
+      ];
+      args: [
         {
-          "name": "tokenAuthorityBump",
-          "type": "u8"
+          name: "tokenAuthorityBump";
+          type: "u8";
         },
         {
-          "name": "repurchaseQuantity",
-          "type": "u64"
+          name: "repurchaseQuantity";
+          type: "u64";
         }
-      ]
+      ];
     },
     {
-      "name": "setWhitelist",
-      "accounts": [
+      name: "setWhitelist";
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": false
+          name: "reserve";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "whitelist",
-          "isMut": true,
-          "isSigner": false
+          name: "whitelist";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
+          name: "payer";
+          isMut: true;
+          isSigner: true;
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          name: "systemProgram";
+          isMut: false;
+          isSigner: false;
         }
-      ],
-      "args": [
+      ];
+      args: [
         {
-          "name": "whitelistBump",
-          "type": "u8"
+          name: "whitelistBump";
+          type: "u8";
         },
         {
-          "name": "root",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
+          name: "root";
+          type: {
+            array: ["u8", 32];
+          };
         }
-      ]
+      ];
     },
     {
-      "name": "fundReserve",
-      "accounts": [
+      name: "fundReserve";
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": false
+          name: "reserve";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "tokenStore",
-          "isMut": true,
-          "isSigner": false
+          name: "tokenStore";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "funderTokenAccount",
-          "isMut": true,
-          "isSigner": false
+          name: "funderTokenAccount";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "sender",
-          "isMut": true,
-          "isSigner": true
+          name: "sender";
+          isMut: true;
+          isSigner: true;
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
         }
-      ],
-      "args": [
+      ];
+      args: [
         {
-          "name": "tokenStoreBump",
-          "type": "u8"
+          name: "tokenStoreBump";
+          type: "u8";
         },
         {
-          "name": "amount",
-          "type": "u64"
+          name: "amount";
+          type: "u64";
         }
-      ]
+      ];
     },
     {
-      "name": "redeemNft",
-      "accounts": [
+      name: "redeemNft";
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": false
+          name: "reserve";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "whitelist",
-          "isMut": false,
-          "isSigner": false
+          name: "whitelist";
+          isMut: false;
+          isSigner: false;
         },
         {
-          "name": "tokenStore",
-          "isMut": true,
-          "isSigner": false
+          name: "tokenStore";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "tokenAuthority",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenAuthority";
+          isMut: false;
+          isSigner: false;
         },
         {
-          "name": "recipientTokenAccount",
-          "isMut": true,
-          "isSigner": false
+          name: "recipientTokenAccount";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "nftTokenAccount",
-          "isMut": true,
-          "isSigner": false
+          name: "nftTokenAccount";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "nftMint",
-          "isMut": true,
-          "isSigner": false
+          name: "nftMint";
+          isMut: true;
+          isSigner: false;
         },
         {
-          "name": "redeemer",
-          "isMut": true,
-          "isSigner": true
+          name: "redeemer";
+          isMut: true;
+          isSigner: true;
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
         }
-      ],
-      "args": [
+      ];
+      args: [
         {
-          "name": "tokenStoreBump",
-          "type": "u8"
+          name: "tokenStoreBump";
+          type: "u8";
         },
         {
-          "name": "tokenAuthorityBump",
-          "type": "u8"
+          name: "tokenAuthorityBump";
+          type: "u8";
         },
         {
-          "name": "whitelistBump",
-          "type": "u8"
+          name: "whitelistBump";
+          type: "u8";
         },
         {
-          "name": "whitelistProof",
-          "type": {
-            "vec": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
+          name: "whitelistProof";
+          type: {
+            vec: {
+              array: ["u8", 32];
+            };
+          };
         }
-      ]
+      ];
     }
-  ],
-  "accounts": [
+  ];
+  accounts: [
     {
-      "name": "reserve",
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "reserve";
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "manager",
-            "type": "publicKey"
+            name: "manager";
+            type: "publicKey";
           },
           {
-            "name": "redeemCount",
-            "type": "u64"
+            name: "redeemCount";
+            type: "u64";
           },
           {
-            "name": "repurchaseQuantity",
-            "type": "u64"
+            name: "repurchaseQuantity";
+            type: "u64";
+          },
+          {
+            name: "tokenMint";
+            type: "publicKey";
           }
-        ]
-      }
+        ];
+      };
     },
     {
-      "name": "whitelist",
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "whitelist";
+      type: {
+        kind: "struct";
+        fields: [
           {
-            "name": "base",
-            "type": "publicKey"
+            name: "base";
+            type: "publicKey";
           },
           {
-            "name": "bump",
-            "type": "u8"
+            name: "bump";
+            type: "u8";
           },
           {
-            "name": "root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            name: "root";
+            type: {
+              array: ["u8", 32];
+            };
           }
-        ]
-      }
+        ];
+      };
     }
-  ]
+  ];
 };
 
 export const IDL: NftReserve = {
-  "version": "0.1.0",
-  "name": "nft_reserve",
-  "instructions": [
+  version: "0.1.0",
+  name: "nft_reserve",
+  instructions: [
     {
-      "name": "initReserve",
-      "accounts": [
+      name: "initReserve",
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": true
+          name: "reserve",
+          isMut: true,
+          isSigner: true,
         },
         {
-          "name": "manager",
-          "isMut": true,
-          "isSigner": true
+          name: "manager",
+          isMut: true,
+          isSigner: true,
         },
         {
-          "name": "tokenAuthority",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenAuthority",
+          isMut: false,
+          isSigner: false,
         },
         {
-          "name": "tokenStore",
-          "isMut": true,
-          "isSigner": false
+          name: "tokenStore",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "whitelist",
-          "isMut": true,
-          "isSigner": false
+          name: "whitelist",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenMint",
+          isMut: false,
+          isSigner: false,
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          name: "rent",
+          isMut: false,
+          isSigner: false,
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+          name: "systemProgram",
+          isMut: false,
+          isSigner: false,
+        },
       ],
-      "args": [
+      args: [
         {
-          "name": "tokenAuthorityBump",
-          "type": "u8"
+          name: "tokenAuthorityBump",
+          type: "u8",
         },
         {
-          "name": "repurchaseQuantity",
-          "type": "u64"
-        }
-      ]
+          name: "repurchaseQuantity",
+          type: "u64",
+        },
+      ],
     },
     {
-      "name": "setWhitelist",
-      "accounts": [
+      name: "setWhitelist",
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": false
+          name: "reserve",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "whitelist",
-          "isMut": true,
-          "isSigner": false
+          name: "whitelist",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
+          name: "payer",
+          isMut: true,
+          isSigner: true,
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+          name: "systemProgram",
+          isMut: false,
+          isSigner: false,
+        },
       ],
-      "args": [
+      args: [
         {
-          "name": "whitelistBump",
-          "type": "u8"
+          name: "whitelistBump",
+          type: "u8",
         },
         {
-          "name": "root",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ]
+          name: "root",
+          type: {
+            array: ["u8", 32],
+          },
+        },
+      ],
     },
     {
-      "name": "fundReserve",
-      "accounts": [
+      name: "fundReserve",
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": false
+          name: "reserve",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "tokenStore",
-          "isMut": true,
-          "isSigner": false
+          name: "tokenStore",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "funderTokenAccount",
-          "isMut": true,
-          "isSigner": false
+          name: "funderTokenAccount",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "sender",
-          "isMut": true,
-          "isSigner": true
+          name: "sender",
+          isMut: true,
+          isSigner: true,
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
       ],
-      "args": [
+      args: [
         {
-          "name": "tokenStoreBump",
-          "type": "u8"
+          name: "tokenStoreBump",
+          type: "u8",
         },
         {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
+          name: "amount",
+          type: "u64",
+        },
+      ],
     },
     {
-      "name": "redeemNft",
-      "accounts": [
+      name: "redeemNft",
+      accounts: [
         {
-          "name": "reserve",
-          "isMut": true,
-          "isSigner": false
+          name: "reserve",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "whitelist",
-          "isMut": false,
-          "isSigner": false
+          name: "whitelist",
+          isMut: false,
+          isSigner: false,
         },
         {
-          "name": "tokenStore",
-          "isMut": true,
-          "isSigner": false
+          name: "tokenStore",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "tokenAuthority",
-          "isMut": false,
-          "isSigner": false
+          name: "tokenAuthority",
+          isMut: false,
+          isSigner: false,
         },
         {
-          "name": "recipientTokenAccount",
-          "isMut": true,
-          "isSigner": false
+          name: "recipientTokenAccount",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "nftTokenAccount",
-          "isMut": true,
-          "isSigner": false
+          name: "nftTokenAccount",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "nftMint",
-          "isMut": true,
-          "isSigner": false
+          name: "nftMint",
+          isMut: true,
+          isSigner: false,
         },
         {
-          "name": "redeemer",
-          "isMut": true,
-          "isSigner": true
+          name: "redeemer",
+          isMut: true,
+          isSigner: true,
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
       ],
-      "args": [
+      args: [
         {
-          "name": "tokenStoreBump",
-          "type": "u8"
+          name: "tokenStoreBump",
+          type: "u8",
         },
         {
-          "name": "tokenAuthorityBump",
-          "type": "u8"
+          name: "tokenAuthorityBump",
+          type: "u8",
         },
         {
-          "name": "whitelistBump",
-          "type": "u8"
+          name: "whitelistBump",
+          type: "u8",
         },
         {
-          "name": "whitelistProof",
-          "type": {
-            "vec": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        }
-      ]
-    }
+          name: "whitelistProof",
+          type: {
+            vec: {
+              array: ["u8", 32],
+            },
+          },
+        },
+      ],
+    },
   ],
-  "accounts": [
+  accounts: [
     {
-      "name": "reserve",
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "reserve",
+      type: {
+        kind: "struct",
+        fields: [
           {
-            "name": "manager",
-            "type": "publicKey"
+            name: "manager",
+            type: "publicKey",
           },
           {
-            "name": "redeemCount",
-            "type": "u64"
+            name: "redeemCount",
+            type: "u64",
           },
           {
-            "name": "repurchaseQuantity",
-            "type": "u64"
-          }
-        ]
-      }
+            name: "repurchaseQuantity",
+            type: "u64",
+          },
+          {
+            name: "tokenMint",
+            type: "publicKey",
+          },
+        ],
+      },
     },
     {
-      "name": "whitelist",
-      "type": {
-        "kind": "struct",
-        "fields": [
+      name: "whitelist",
+      type: {
+        kind: "struct",
+        fields: [
           {
-            "name": "base",
-            "type": "publicKey"
+            name: "base",
+            type: "publicKey",
           },
           {
-            "name": "bump",
-            "type": "u8"
+            name: "bump",
+            type: "u8",
           },
           {
-            "name": "root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    }
-  ]
+            name: "root",
+            type: {
+              array: ["u8", 32],
+            },
+          },
+        ],
+      },
+    },
+  ],
 };
