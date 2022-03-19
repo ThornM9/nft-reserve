@@ -21,7 +21,7 @@ export default defineComponent({
 <style scoped>
 .nav-button {
   @apply px-10 py-3 text-black
-  hover:bg-white hover:text-black;
+  hover:text-blue-600;
   outline: none;
 }
 </style>

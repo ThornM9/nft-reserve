@@ -37,12 +37,6 @@ export default defineComponent({
 
 <style scoped>
 .active {
-  @apply bg-white text-black;
-}
-
-.more {
-  @apply px-10 py-3 text-white
-  hover:bg-white hover:text-black;
-  outline: none;
+  @apply text-blue-600;
 }
 </style>

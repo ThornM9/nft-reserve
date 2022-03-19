@@ -1,6 +1,6 @@
 <template>
-  <div class="relative h-full min-h-screen">
-    <TheNavBar />
+  <div class="relative h-full min-h-screen bg-blue-100">
+    <NavBar />
     <div class="p-10">
       <router-view />
     </div>
@@ -8,8 +8,8 @@
 </template>
 
 <script>
-import TheNavBar from "@/components/TheNavBar";
+import NavBar from "@/components/NavBar";
 export default {
-  components: { TheNavBar },
+  components: { NavBar },
 };
 </script>

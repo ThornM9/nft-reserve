@@ -1,4 +1,5 @@
 <template>
+  <div>User</div>
   <ConfigPane />
 </template>
 
