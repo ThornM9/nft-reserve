@@ -108,6 +108,7 @@ fn assert_valid_whitelist_proof<'info>(
     // https://github.com/project-serum/anchor/blob/fcb07eb8c3c9355f3cabc00afa4faa6247ccc960/lang/src/account.rs#L36
     let proof = Account::<'info, WhitelistProof>::try_from(whitelist_proof)?;
 
+    msg!("{}", proof.initialised);
     // check that the proof is initialised and correct whitelist type
     if !proof.initialised || proof.whitelist_type != expected_whitelist_type {
         return Err(error!(ErrorCode::NotWhitelisted));
@@ -183,10 +184,12 @@ pub fn handler(ctx: Context<RedeemNft>, _token_store_bump: u8, token_authority_b
     assert_eq!(ctx.accounts.nft_mint.decimals, 0);
     assert_eq!(ctx.accounts.nft_mint.mint_authority, COption::None);
 
-    // check that the nft mint is whitelisted
+    // check that the nft is whitelisted
     let reserve = &*ctx.accounts.reserve;
     if reserve.whitelisted_mints > 0 || reserve.whitelisted_creators > 0 {
         assert_whitelisted(&ctx)?;
+    } else {
+        return Err(error!(ErrorCode::NotWhitelisted));
     }
 
     // burn the nft

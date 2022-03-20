@@ -8,6 +8,7 @@ pub struct AddToWhitelist<'info> {
     // reserve
     #[account(mut, has_one = manager)]
     pub reserve: Box<Account<'info, Reserve>>,
+    #[account(mut)]
     pub manager: Signer<'info>,
 
     // whitelist
@@ -21,13 +22,11 @@ pub struct AddToWhitelist<'info> {
             address_to_whitelist.key().as_ref(),
         ],
         bump,
-        payer = payer,
+        payer = manager,
         space = 8 + std::mem::size_of::<WhitelistProof>())]
     pub whitelist_proof: Box<Account<'info, WhitelistProof>>,
 
     // misc
-    #[account(mut)]
-    pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -50,6 +49,7 @@ pub fn handler(ctx: Context<AddToWhitelist>, whitelist_type: bool) -> Result<()>
     proof.whitelist_type = whitelist_type;
     proof.whitelisted_address = ctx.accounts.address_to_whitelist.key();
     proof.reserve = ctx.accounts.reserve.key();
+    proof.initialised = true;
 
     let reserve = &mut ctx.accounts.reserve;
 
@@ -58,6 +58,6 @@ pub fn handler(ctx: Context<AddToWhitelist>, whitelist_type: bool) -> Result<()>
     } else {
         reserve.whitelisted_mints = reserve.whitelisted_mints.safe_add(1)?;
     }
-    
+
     Ok(())
 }
