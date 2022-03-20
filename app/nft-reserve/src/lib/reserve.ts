@@ -1,10 +1,13 @@
 import * as anchor from "@project-serum/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { Token } from "@solana/spl-token";
+import {
+  Token,
+  TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { NftReserve } from "./nft_reserve_type";
 import { enc } from "@/lib/utils";
 import { RESERVE_PROGRAM_ID } from "./constants";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export class ReserveClient {
   reserveProgram!: anchor.Program<NftReserve>;
@@ -80,6 +83,38 @@ export class ReserveClient {
           systemProgram: anchor.web3.SystemProgram.programId,
         },
         signers: [reserveAccount],
+      }
+    );
+  }
+
+  async fundReserve(
+    reservePk: PublicKey,
+    tokenMintPk: PublicKey,
+    fundAmount: number
+  ): Promise<void> {
+    const [store, store_bump] = await PublicKey.findProgramAddress(
+      [enc("token-store"), reservePk.toBytes()],
+      RESERVE_PROGRAM_ID
+    );
+
+    const managerTokenAcc = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      tokenMintPk,
+      this.provider.wallet.publicKey
+    );
+
+    await this.reserveProgram.rpc.fundReserve(
+      store_bump,
+      new anchor.BN(fundAmount),
+      {
+        accounts: {
+          reserve: reservePk,
+          tokenStore: store,
+          funderTokenAccount: managerTokenAcc,
+          sender: this.provider.wallet.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
       }
     );
   }

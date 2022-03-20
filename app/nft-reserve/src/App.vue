@@ -15,6 +15,12 @@
 .outlined-btn {
   @apply bg-transparent text-white py-2 px-4 border-2 rounded;
 }
+
+.text-input {
+  @apply bg-gray-200 appearance-none border-2 border-gray-200 
+  rounded w-full py-2 px-4 text-gray-700 leading-tight 
+  focus:outline-none focus:bg-white;
+}
 </style>
 
 <script>

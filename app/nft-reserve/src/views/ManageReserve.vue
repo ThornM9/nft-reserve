@@ -24,6 +24,7 @@
             id="select-reserve"
             v-model="currentReserve"
             class="select bg-secondary focus:bg-secondary form-select border-white text-white w-3/4"
+            @change="refreshBal"
           >
             <option
               v-for="elem in foundReserves"
@@ -57,7 +58,7 @@
           {{ tokensRemainingInReserve }}
         </p>
         <div class="text-center mt-6">
-          <button class="outlined-btn border-primary" @click="onNewWallet">
+          <button class="outlined-btn border-primary" @click="refreshBal">
             Refresh Reserve Info
           </button>
         </div>
@@ -68,6 +69,20 @@
         <h1 class="text-center mb-5 text-xl">
           <strong>Fund Reserve</strong>
         </h1>
+        <form @submit.prevent="fundReserve" class="text-center">
+          <div>
+            <label for="fundAmount" class="mr-2">Fund Amount: </label>
+            <input
+              type="text"
+              id="fundAmount"
+              v-model="fundAmount"
+              class="text-input focus:border-primary w-1/2 ml-2"
+            />
+          </div>
+          <button class="mt-5 outlined-btn border-primary" type="submit">
+            Fund Reserve
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -102,6 +117,7 @@ export default defineComponent({
     const foundReserves = ref<any[]>([]);
     const currentReserve = ref<any>();
     const tokensRemainingInReserve = ref<string>("Loading");
+    const fundAmount = ref<string>("");
 
     let rc: ReserveClient;
     const onNewWallet = async () => {
@@ -112,7 +128,19 @@ export default defineComponent({
         reserveIdl,
         RESERVE_PROGRAM_ID
       );
-      await findReserves(getWallet()!.publicKey!);
+      foundReserves.value = await rc.findAllReserves(getWallet()!.publicKey!);
+      if (foundReserves.value.length) {
+        currentReserve.value = foundReserves.value[0];
+      }
+      await updateReserveBalance();
+    };
+
+    const refreshBal = async () => {
+      foundReserves.value = await rc.findAllReserves(getWallet()!.publicKey!);
+      await updateReserveBalance();
+    };
+
+    const updateReserveBalance = async () => {
       tokensRemainingInReserve.value = "Loading...";
       const bal = await rc.getReserveBalance(
         currentReserve.value.publicKey,
@@ -121,11 +149,12 @@ export default defineComponent({
       tokensRemainingInReserve.value = `${bal}`;
     };
 
-    const findReserves = async (manager: PublicKey) => {
-      foundReserves.value = await rc.findAllReserves(manager);
-      if (foundReserves.value.length) {
-        currentReserve.value = foundReserves.value[0];
-      }
+    const fundReserve = async () => {
+      await rc.fundReserve(
+        currentReserve.value.publicKey,
+        currentReserve.value.account.tokenMint,
+        parseFloat(fundAmount.value)
+      );
     };
 
     return {
@@ -133,7 +162,9 @@ export default defineComponent({
       foundReserves,
       currentReserve,
       tokensRemainingInReserve,
-      onNewWallet,
+      refreshBal,
+      fundAmount,
+      fundReserve,
     };
   },
 });
