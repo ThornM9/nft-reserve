@@ -10,14 +10,6 @@ use solana_program::{
 pub struct RedeemNft<'info> {
     #[account(mut)]
     pub reserve: Box<Account<'info, Reserve>>,
-    #[account(
-        seeds = [
-            b"whitelist".as_ref(),
-            reserve.key().as_ref(),
-        ],
-        bump=whitelist_bump,
-    )]
-    pub whitelist: Box<Account<'info, Whitelist>>,
     #[account(mut, seeds = [
             b"token-store".as_ref(),
             reserve.key().as_ref(),
@@ -67,32 +59,13 @@ impl<'info> RedeemNft<'info> {
     }
 }
 
-fn verify(proof: Vec<[u8; 32]>, root: [u8; 32], leaf: [u8; 32]) -> bool {
-    let mut computed_hash = leaf;
-    for proof_element in proof.into_iter() {
-        if computed_hash <= proof_element {
-            // Hash(current computed hash + current element of the proof)
-            computed_hash =
-                anchor_lang::solana_program::keccak::hashv(&[&computed_hash, &proof_element]).0;
-        } else {
-            // Hash(current element of the proof + current computed hash)
-            computed_hash =
-                anchor_lang::solana_program::keccak::hashv(&[&proof_element, &computed_hash]).0;
-        }
-    }
-    // Check if the computed hash (root) is equal to the provided root
-    computed_hash == root
-}
-
 pub fn handler(ctx: Context<RedeemNft>, _token_store_bump: u8, token_authority_bump: u8, whitelist_bump: u8, whitelist_proof: Vec<[u8; 32]>) -> Result<()> {
     // check we're burning an nft and not a random spl token
     assert_eq!(ctx.accounts.nft_mint.supply, 1);
     assert_eq!(ctx.accounts.nft_mint.decimals, 0);
     assert_eq!(ctx.accounts.nft_mint.mint_authority, COption::None);
 
-    // check that the nft mint is whitelisted
-    let node = anchor_lang::solana_program::keccak::hash(ctx.accounts.nft_mint.key().as_ref());
-    assert_eq!(verify(whitelist_proof, ctx.accounts.whitelist.root, node.0), true);
+    // TODO check that the nft mint is whitelisted
 
     // burn the nft
     token::burn(ctx.accounts.burn_ctx(), 1)?;

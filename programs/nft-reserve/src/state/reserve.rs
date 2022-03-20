@@ -6,4 +6,6 @@ pub struct Reserve {
   pub redeem_count: u64,
   pub repurchase_quantity: u64,
   pub token_mint: Pubkey,
+  pub whitelisted_mints: u32,
+  pub whitelisted_creators: u32,
 }

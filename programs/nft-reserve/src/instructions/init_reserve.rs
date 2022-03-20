@@ -30,16 +30,6 @@ pub struct InitReserve<'info> {
         payer = manager,
     )]
     pub token_store: Account<'info, TokenAccount>,
-    #[account(
-        init,
-        seeds = [
-            b"whitelist".as_ref(),
-            reserve.key().as_ref(),
-        ],
-        bump,
-        payer=manager,
-    )]
-    pub whitelist: Box<Account<'info, Whitelist>>,
     pub token_mint: Box<Account<'info, Mint>>,
 
     pub token_program: Program<'info, Token>,
@@ -55,12 +45,6 @@ pub fn handler(ctx: Context<InitReserve>, _token_authority_bump: u8, repurchase_
     reserve.repurchase_quantity = repurchase_quantity;
     reserve.token_mint = ctx.accounts.token_mint.key();
 
-    let whitelist = &mut ctx.accounts.whitelist;
-    let res = ctx.bumps.get("whitelist").ok_or("couldn't find whitelist bump");
-    whitelist.bump = match res {
-        Ok(bump) => *bump,
-        Err(_error) => panic!("couldn't find whitelist bump"),
-    };
     msg!("Reserve successfully initialised");
     Ok(())
 }

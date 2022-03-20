@@ -1,5 +1,5 @@
 pub mod reserve;
-pub mod whitelist;
+pub mod whitelist_proof;
 
 pub use reserve::*;
-pub use whitelist::*;
+pub use whitelist_proof::*;

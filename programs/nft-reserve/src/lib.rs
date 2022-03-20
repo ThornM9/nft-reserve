@@ -14,8 +14,12 @@ pub mod nft_reserve {
         instructions::init_reserve::handler(ctx, token_authority_bump, repurchase_quantity)
     }
 
-    pub fn set_whitelist(ctx: Context<SetWhitelist>, whitelist_bump: u8, root: [u8; 32]) -> Result<()> {
-        instructions::set_whitelist::handler(ctx, whitelist_bump, root)
+    pub fn add_to_whitelist(ctx: Context<AddToWhitelist>, whitelist_type: bool) -> Result<()> {
+        instructions::add_to_whitelist::handler(ctx, whitelist_type)
+    }
+
+    pub fn remove_from_whitelist(ctx: Context<RemoveFromWhitelist>, _proof_bump: u8) -> Result<()> {
+        instructions::remove_from_whitelist::handler(ctx)
     }
 
     pub fn fund_reserve(ctx: Context<FundReserve>, token_store_bump: u8, amount: u64) -> Result<()> {
