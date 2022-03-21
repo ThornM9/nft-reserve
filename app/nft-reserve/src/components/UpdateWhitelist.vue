@@ -15,10 +15,10 @@
           />
         </div>
         <div class="my-4">
-          <label>
+          <label class="cursor-pointer">
             <input
               type="radio"
-              class="invisible cursor-pointer"
+              class="invisible"
               :value="true"
               v-model="type"
             />
@@ -36,10 +36,10 @@
               >Creator</span
             >
           </label>
-          <label>
+          <label class="cursor-pointer">
             <input
               type="radio"
-              class="invisible cursor-pointer"
+              class="invisible"
               :value="false"
               v-model="type"
             />
@@ -59,10 +59,10 @@
           </label>
         </div>
         <div>
-          <label>
+          <label class="cursor-pointer">
             <input
               type="radio"
-              class="invisible cursor-pointer"
+              class="invisible"
               value="add"
               v-model="addOrRemove"
             />
@@ -80,10 +80,10 @@
               >Add</span
             >
           </label>
-          <label>
+          <label class="cursor-pointer">
             <input
               type="radio"
-              class="invisible cursor-pointer"
+              class="invisible"
               value="remove"
               v-model="addOrRemove"
             />
@@ -106,6 +106,16 @@
           Update Whitelist
         </button>
       </form>
+      <div class="mt-4 text-center">
+        <h1 class="text-center mb-5 text-xl">Current Whitelists:</h1>
+        <div v-for="proof in proofs" :key="proof.address">
+          {{ proof.account.whitelistedAddress.toString() }} -
+          {{ proof.account.whitelistType ? "Creator" : "Mint" }}
+        </div>
+        <button class="mt-5 outlined-btn border-primary" @click="refreshProofs">
+          Refresh
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -155,7 +165,6 @@ export default defineComponent({
 
     const refreshProofs = async () => {
       proofs.value = await rc.findAllWhitelistProofs(props.reserve);
-      // TODO display this somewhere
     };
 
     const updateWhitelist = async () => {
@@ -178,6 +187,8 @@ export default defineComponent({
       whitelistAddress,
       type,
       addOrRemove,
+      proofs,
+      refreshProofs,
     };
   },
 });
