@@ -49,6 +49,22 @@ export class ReserveClient {
     return pdas;
   }
 
+  async findAllWhitelistProofs(reserve: PublicKey): Promise<any[]> {
+    const filter = reserve
+      ? [
+          {
+            memcmp: {
+              offset: 42, //need to prepend 8 bytes for anchor's disc
+              bytes: reserve.toBase58(),
+            },
+          },
+        ]
+      : [];
+    const pdas = await this.reserveProgram.account.whitelistProof.all(filter);
+    console.log(`found a total of ${pdas.length} whitelist proofs PDAs`);
+    return pdas;
+  }
+
   async initReserve(
     reserveAccount: Keypair,
     tokenMintKey: PublicKey,
@@ -62,10 +78,6 @@ export class ReserveClient {
       [enc("token-store"), reserveAccount.publicKey.toBytes()],
       RESERVE_PROGRAM_ID
     );
-    const [whitelist] = await PublicKey.findProgramAddress(
-      [enc("whitelist"), reserveAccount.publicKey.toBytes()],
-      RESERVE_PROGRAM_ID
-    );
 
     await this.reserveProgram.rpc.initReserve(
       auth_bump,
@@ -76,7 +88,6 @@ export class ReserveClient {
           manager: this.provider.wallet.publicKey,
           tokenAuthority: auth,
           tokenStore: store,
-          whitelist: whitelist,
           tokenMint: tokenMintKey,
           tokenProgram: TOKEN_PROGRAM_ID,
           rent: anchor.web3.SYSVAR_RENT_PUBKEY,
@@ -117,6 +128,46 @@ export class ReserveClient {
         },
       }
     );
+  }
+
+  async addToWhitelist(
+    reservePk: PublicKey,
+    addressToWhitelist: PublicKey,
+    whitelist_type: boolean
+  ): Promise<void> {
+    const [whitelist, whitelist_bump] = await PublicKey.findProgramAddress(
+      [enc("whitelist"), reservePk.toBytes(), addressToWhitelist.toBytes()],
+      RESERVE_PROGRAM_ID
+    );
+
+    await this.reserveProgram.rpc.addToWhitelist(whitelist_type, {
+      accounts: {
+        reserve: reservePk,
+        manager: this.provider.wallet.publicKey,
+        addressToWhitelist: addressToWhitelist,
+        whitelistProof: whitelist,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+    });
+  }
+
+  async removeFromWhitelist(
+    reservePk: PublicKey,
+    addressToRemove: PublicKey
+  ): Promise<void> {
+    const [whitelist, whitelist_bump] = await PublicKey.findProgramAddress(
+      [enc("whitelist"), reservePk.toBytes(), addressToRemove.toBytes()],
+      RESERVE_PROGRAM_ID
+    );
+
+    await this.reserveProgram.rpc.removeFromWhitelist(whitelist_bump, {
+      accounts: {
+        reserve: reservePk,
+        manager: this.provider.wallet.publicKey,
+        addressToRemove: addressToRemove,
+        whitelistProof: whitelist,
+      },
+    });
   }
 
   async getReserveBalance(

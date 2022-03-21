@@ -85,6 +85,7 @@
         </form>
       </div>
     </div>
+    <UpdateWhitelist :reserve="currentReserve.publicKey" />
   </div>
 </template>
 
@@ -95,8 +96,12 @@ import { RESERVE_PROGRAM_ID } from "../lib/constants";
 import { ReserveClient } from "../lib/reserve";
 import useWallet from "@/composables/wallet";
 import useCluster from "@/composables/cluster";
+import UpdateWhitelist from "@/components/UpdateWhitelist.vue";
 
 export default defineComponent({
+  components: {
+    UpdateWhitelist,
+  },
   setup() {
     const { wallet, getWallet } = useWallet();
     const { cluster, getConnection } = useCluster();
