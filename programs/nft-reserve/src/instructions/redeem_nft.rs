@@ -30,10 +30,10 @@ pub struct RedeemNft<'info> {
     /// CHECK: This is not dangerous because only the key is used and it's a PDA checked by anchor
     pub token_authority: AccountInfo<'info>,
     #[account(mut)]
-    pub recipient_token_account: Account<'info, TokenAccount>,
+    pub recipient_token_account: Account<'info, TokenAccount>, // where funds are deposited
 
     #[account(mut)]
-    pub nft_token_account: Account<'info, TokenAccount>,
+    pub nft_token_account: Account<'info, TokenAccount>, // where nft is taken from
     #[account(mut)]
     pub nft_mint: Box<Account<'info, Mint>>,
 
@@ -43,7 +43,7 @@ pub struct RedeemNft<'info> {
 }
 
 impl<'info> RedeemNft<'info> {
-    fn transfer_ctx(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
+    fn transfer_to_redeemer_ctx(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
         let cpi_accounts = Transfer {
             from: self.token_store.to_account_info(),
             to: self.recipient_token_account.to_account_info(),
@@ -178,7 +178,26 @@ fn assert_whitelisted(ctx: &Context<RedeemNft>) -> Result<()> {
     Err(error!(ErrorCode::NotWhitelisted))
 }
 
-pub fn handler(ctx: Context<RedeemNft>, _token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
+fn assert_valid_token_account<'info>(nft_token_account: &AccountInfo<'info>, nft_mint: &Pubkey, treasury: &Pubkey) {
+    let token_program = Pubkey::from_str("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA").unwrap();
+    let associated_token_program = Pubkey::from_str("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL").unwrap();
+
+    // verify the owner of the account is the spl token program
+    assert_eq!(nft_token_account.owner, &token_program);
+
+    // verify the PDA seeds match
+    let seeds = &[
+        treasury.as_ref(),
+        token_program.as_ref(),
+        nft_mint.as_ref(),
+    ];
+    let (ata_address, _bump) = Pubkey::find_program_address(seeds, &associated_token_program);
+    assert_eq!(ata_address, nft_token_account.key())
+}
+
+pub fn handler<'a, 'b, 'c, 'info>(ctx: Context<'a,'b,'c,'info, RedeemNft<'info>>, _token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
+    let remaining_accs = &mut ctx.remaining_accounts.iter();
+
     // check we're burning an nft and not a random spl token
     assert_eq!(ctx.accounts.nft_mint.supply, 1);
     assert_eq!(ctx.accounts.nft_mint.decimals, 0);
@@ -192,13 +211,34 @@ pub fn handler(ctx: Context<RedeemNft>, _token_store_bump: u8, token_authority_b
         return Err(error!(ErrorCode::NotWhitelisted));
     }
 
-    // burn the nft
-    token::burn(ctx.accounts.burn_ctx(), 1)?;
+    if reserve.burn_purchased_tokens {
+        // burn the nft
+        token::burn(ctx.accounts.burn_ctx(), 1)?;
+    } else {
+        // optional account required if sending nfts to the treasury. this should be an ata owned by the treasury account
+        let treasury_ata = next_account_info(remaining_accs)?;
+
+        // assert it's a valid account (owned by the treasury, valid TokenAccount struct)
+        assert_valid_token_account(treasury_ata, &ctx.accounts.nft_mint.key(), &ctx.accounts.reserve.treasury_account);
+        
+        // transfer nft to the ata
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.nft_token_account.to_account_info(),
+            to: treasury_ata.clone(),
+            authority: ctx.accounts.redeemer.to_account_info(),
+        };
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(), 
+                cpi_accounts
+            ), 1
+        )?;
+    }
 
     // send tokens from store to redeemer
     token::transfer(
         ctx.accounts
-            .transfer_ctx()
+            .transfer_to_redeemer_ctx()
             .with_signer(&[&[b"token-authority".as_ref(), ctx.accounts.reserve.key().as_ref(), &[token_authority_bump]]]), 
         ctx.accounts.reserve.repurchase_quantity
     )?;

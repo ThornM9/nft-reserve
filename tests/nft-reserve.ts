@@ -28,7 +28,7 @@ describe('nft-reserve', () => {
   //@ts-ignore
   const program = anchor.workspace.NftReserve as Program<NftReserve>;
 
-  let reserveAccount: anchor.web3.Keypair, managerAccount: anchor.web3.Keypair;
+  let reserveAccount: anchor.web3.Keypair, managerAccount: anchor.web3.Keypair, treasuryAccount: anchor.web3.Keypair;
   let tokenMint: Token, mintAuthority: anchor.web3.Keypair, managerTokenAccount: PublicKey;
   let nftMintA: Token, nftMintB: Token,redeemerAccount: anchor.web3.Keypair;
   let redeemerTokenAccount: PublicKey, redeemerNftAccountA: PublicKey, redeemerNftAccountB: PublicKey;
@@ -36,6 +36,7 @@ describe('nft-reserve', () => {
   beforeEach(async () => {
     reserveAccount = anchor.web3.Keypair.generate();
     managerAccount = anchor.web3.Keypair.generate();
+    treasuryAccount = anchor.web3.Keypair.generate();
     mintAuthority = anchor.web3.Keypair.generate();
     redeemerAccount = anchor.web3.Keypair.generate();
 
@@ -95,7 +96,7 @@ describe('nft-reserve', () => {
     return [nftMint, nftTokenAccount];
   }
 
-  async function initReserve() {
+  async function initReserve(burnPurchased: boolean = false) {
     let [auth, auth_bump] = await PublicKey.findProgramAddress([
       enc("token-authority"), reserveAccount.publicKey.toBytes(),
     ], program.programId);
@@ -106,13 +107,13 @@ describe('nft-reserve', () => {
       enc("whitelist"), reserveAccount.publicKey.toBytes(),
     ], program.programId)
     
-    await program.rpc.initReserve(auth_bump, new anchor.BN(repurchaseQuantity), {
+    await program.rpc.initReserve(auth_bump, new anchor.BN(repurchaseQuantity), burnPurchased, {
       accounts: {
         reserve: reserveAccount.publicKey,
         manager: managerAccount.publicKey,
+        treasuryAccount: treasuryAccount.publicKey,
         tokenAuthority: auth,
         tokenStore: store,
-        whitelist: whitelist,
         tokenMint: tokenMint.publicKey,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,

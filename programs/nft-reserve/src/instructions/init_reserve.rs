@@ -10,6 +10,8 @@ pub struct InitReserve<'info> {
     pub reserve: Box<Account<'info, Reserve>>,
     #[account(mut)]
     pub manager: Signer<'info>,
+    /// CHECK: not dangerous
+    pub treasury_account: AccountInfo<'info>, // this is the account where the purchased nfts will be sent if the reserve is not set to burn them
     #[account(
         seeds = [
             b"token-authority".as_ref(),
@@ -37,13 +39,17 @@ pub struct InitReserve<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<InitReserve>, _token_authority_bump: u8, repurchase_quantity: u64) -> Result<()> {
+pub fn handler(ctx: Context<InitReserve>, _token_authority_bump: u8, repurchase_quantity: u64, burn_purchased_tokens: bool) -> Result<()> {
     let reserve = &mut ctx.accounts.reserve;
     
     reserve.manager = ctx.accounts.manager.key();
+    reserve.treasury_account = ctx.accounts.treasury_account.key();
     reserve.redeem_count = 0;
     reserve.repurchase_quantity = repurchase_quantity;
     reserve.token_mint = ctx.accounts.token_mint.key();
+    reserve.whitelisted_mints = 0;
+    reserve.whitelisted_creators = 0;
+    reserve.burn_purchased_tokens = burn_purchased_tokens;
 
     msg!("Reserve successfully initialised");
     Ok(())

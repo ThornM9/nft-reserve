@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use instructions::*;
 
-declare_id!("8vdqBghr2zC4uGeajcXHHD8XNpuAavtdbYUy5LcGdfm3");
+declare_id!("3mk9JnpeBbfdo58S4R4SMHy9m1sFENseiHCJCN9xSUZ1");
 
 pub mod instructions;
 pub mod state;
@@ -11,8 +11,8 @@ pub mod errors;
 pub mod nft_reserve {
     use super::*;
 
-    pub fn init_reserve(ctx: Context<InitReserve>, token_authority_bump: u8, repurchase_quantity: u64) -> Result<()> {
-        instructions::init_reserve::handler(ctx, token_authority_bump, repurchase_quantity)
+    pub fn init_reserve(ctx: Context<InitReserve>, token_authority_bump: u8, repurchase_quantity: u64, burn_purchased_tokens: bool) -> Result<()> {
+        instructions::init_reserve::handler(ctx, token_authority_bump, repurchase_quantity, burn_purchased_tokens)
     }
 
     pub fn add_to_whitelist(ctx: Context<AddToWhitelist>, whitelist_type: bool) -> Result<()> {
@@ -27,7 +27,7 @@ pub mod nft_reserve {
         instructions::fund_reserve::handler(ctx, token_store_bump, amount)
     }
 
-    pub fn redeem_nft(ctx: Context<RedeemNft>, token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
+    pub fn redeem_nft<'a, 'b, 'c, 'info>(ctx: Context<'a,'b,'c,'info, RedeemNft<'info>>, token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
         instructions::redeem_nft::handler(ctx, token_store_bump, token_authority_bump)
     }
 }
