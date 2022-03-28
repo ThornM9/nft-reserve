@@ -21,6 +21,10 @@
   rounded w-full py-2 px-4 text-gray-700 leading-tight 
   focus:outline-none focus:bg-white;
 }
+
+.text-input:disabled {
+  @apply bg-gray-400 border-gray-400;
+}
 </style>
 
 <script>

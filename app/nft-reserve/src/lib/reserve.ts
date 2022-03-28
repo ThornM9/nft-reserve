@@ -33,7 +33,7 @@ export class ReserveClient {
     );
   }
 
-  async findAllReserves(manager: PublicKey): Promise<any[]> {
+  async findAllReserves(manager?: PublicKey): Promise<any[]> {
     const filter = manager
       ? [
           {
@@ -68,7 +68,9 @@ export class ReserveClient {
   async initReserve(
     reserveAccount: Keypair,
     tokenMintKey: PublicKey,
-    repurchaseQuantity: number
+    repurchaseQuantity: number,
+    burnNfts: boolean,
+    treasuryAccount: PublicKey
   ): Promise<void> {
     const [auth, auth_bump] = await PublicKey.findProgramAddress(
       [enc("token-authority"), reserveAccount.publicKey.toBytes()],
@@ -82,10 +84,14 @@ export class ReserveClient {
     await this.reserveProgram.rpc.initReserve(
       auth_bump,
       new anchor.BN(repurchaseQuantity),
+      burnNfts,
       {
         accounts: {
           reserve: reserveAccount.publicKey,
           manager: this.provider.wallet.publicKey,
+          treasuryAccount: treasuryAccount
+            ? treasuryAccount
+            : anchor.web3.Keypair.generate().publicKey,
           tokenAuthority: auth,
           tokenStore: store,
           tokenMint: tokenMintKey,
@@ -186,5 +192,112 @@ export class ReserveClient {
     );
     const tokenAccount = await tokenMint.getAccountInfo(store);
     return tokenAccount.amount.toNumber();
+  }
+
+  async redeemNft(
+    tokenMintPk: PublicKey,
+    treasuryPk: PublicKey,
+    reserve: PublicKey,
+    nftMintPk: PublicKey,
+    nftAccount: PublicKey,
+    creatorPk: PublicKey
+  ): Promise<void> {
+    const [auth, authBump] = await PublicKey.findProgramAddress(
+      [enc("token-authority"), reserve.toBytes()],
+      this.reserveProgram.programId
+    );
+    const [store, storeBump] = await PublicKey.findProgramAddress(
+      [enc("token-store"), reserve.toBytes()],
+      this.reserveProgram.programId
+    );
+    const [mintProof, mintBump] = await PublicKey.findProgramAddress(
+      [enc("whitelist"), reserve.toBytes(), nftMintPk.toBytes()],
+      this.reserveProgram.programId
+    );
+    const [creatorProof, creatorBump] = await PublicKey.findProgramAddress(
+      [enc("whitelist"), reserve.toBytes(), creatorPk.toBytes()],
+      this.reserveProgram.programId
+    );
+    const metadataProgram = new PublicKey(
+      "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+    );
+    const [metadata, metadataBump] = await PublicKey.findProgramAddress(
+      [enc("metadata"), metadataProgram.toBytes(), nftMintPk.toBytes()],
+      metadataProgram
+    );
+
+    const [treasuryAtaPda, treasuryAtaPdaBump] =
+      await PublicKey.findProgramAddress(
+        [treasuryPk.toBytes(), TOKEN_PROGRAM_ID.toBytes(), nftMintPk.toBytes()],
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+    const [recTokAccPda, recTokAccPdaBump] = await PublicKey.findProgramAddress(
+      [
+        this.provider.wallet.publicKey.toBytes(),
+        TOKEN_PROGRAM_ID.toBytes(),
+        tokenMintPk.toBytes(),
+      ],
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const remainingAccounts: any[] = [];
+    remainingAccounts.push({
+      pubkey: mintProof,
+      isWritable: false,
+      isSigner: false,
+    });
+    remainingAccounts.push({
+      pubkey: metadata,
+      isWritable: false,
+      isSigner: false,
+    });
+    remainingAccounts.push({
+      pubkey: creatorProof,
+      isWritable: false,
+      isSigner: false,
+    });
+
+    const a = {
+      reserve: reserve,
+      tokenStore: store,
+      tokenAuthority: auth,
+      reserveTokenMint: tokenMintPk,
+      recipientTokenAccount: recTokAccPda,
+      treasuryAccount: treasuryPk,
+      treasuryAta: treasuryAtaPda,
+      nftTokenAccount: nftAccount,
+      nftMint: nftMintPk,
+      redeemer: this.provider.wallet.publicKey,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    for (const key of Object.keys(a)) {
+      console.log(`${key}: ${a[key].toString()}`);
+    }
+
+    await this.reserveProgram.rpc.redeemNft(storeBump, authBump, {
+      accounts: {
+        reserve: reserve,
+        tokenStore: store,
+        tokenAuthority: auth,
+        reserveTokenMint: tokenMintPk,
+        recipientTokenAccount: recTokAccPda,
+        treasuryAccount: treasuryPk,
+        treasuryAta: treasuryAtaPda,
+        nftTokenAccount: nftAccount,
+        nftMint: nftMintPk,
+        redeemer: this.provider.wallet.publicKey,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [],
+      remainingAccounts,
+    });
   }
 }

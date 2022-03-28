@@ -27,7 +27,7 @@ pub mod nft_reserve {
         instructions::fund_reserve::handler(ctx, token_store_bump, amount)
     }
 
-    pub fn redeem_nft<'a, 'b, 'c, 'info>(ctx: Context<'a,'b,'c,'info, RedeemNft<'info>>, token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
+    pub fn redeem_nft(ctx: Context<RedeemNft>, token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
         instructions::redeem_nft::handler(ctx, token_store_bump, token_authority_bump)
     }
 }

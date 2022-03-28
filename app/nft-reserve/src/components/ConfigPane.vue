@@ -6,7 +6,7 @@
           required
           id="cluster"
           v-model="chosenCluster"
-          class="select bg-secondary focus:bg-secondary form-select border-primary text-pb"
+          class="custom-select bg-secondary focus:bg-secondary border-primary text-pb"
         >
           <option :value="Cluster.Mainnet">Mainnet</option>
           <option :value="Cluster.Devnet">Devnet</option>
@@ -19,7 +19,7 @@
           required
           id="wallet"
           v-model="chosenWallet"
-          class="select bg-secondary focus:bg-secondary form-select border-primary text-pb text-center"
+          class="custom-select bg-secondary focus:bg-secondary border-primary text-pb text-center"
         >
           <option class="text-gray-500" :value="null">Choose wallet</option>
           <option :value="WalletName.Phantom">Phantom</option>
@@ -33,7 +33,7 @@
 </template>
 
 <style scoped>
-.select {
+.custom-select {
   @apply appearance-none block w-full px-3 py-1.5 text-base 
     font-normal bg-clip-padding bg-no-repeat border-2 border-solid 
     rounded transition ease-in-out m-0 focus:outline-none h-full;

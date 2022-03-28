@@ -23,7 +23,7 @@
             required
             id="select-reserve"
             v-model="currentReserve"
-            class="select bg-secondary focus:bg-secondary form-select border-white text-white w-3/4"
+            class="custom-select bg-secondary focus:bg-secondary border-white text-white w-3/4"
             @change="refreshBal"
           >
             <option
@@ -38,6 +38,11 @@
         <p>
           Reserve manager: &nbsp;&nbsp;{{
             currentReserve.account.manager.toString()
+          }}
+        </p>
+        <p>
+          Treasury account: &nbsp;&nbsp;{{
+            currentReserve.account.treasuryAccount.toString()
           }}
         </p>
         <p>
@@ -91,7 +96,6 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, watch, ref } from "vue";
-import { PublicKey, Keypair } from "@solana/web3.js";
 import { RESERVE_PROGRAM_ID } from "../lib/constants";
 import { ReserveClient } from "../lib/reserve";
 import useWallet from "@/composables/wallet";

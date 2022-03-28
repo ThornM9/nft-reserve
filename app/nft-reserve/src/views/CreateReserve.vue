@@ -20,12 +20,38 @@
             />
           </div>
           <div>
+            <label for="treasuryAccount"
+              >Treasury Address (where purchased NFTs will be sent)</label
+            >
+            <input
+              type="text"
+              id="treasuryAccount"
+              :disabled="burnNfts || sameTreasuryManager"
+              v-model="treasuryAccount"
+              class="text-input focus:border-primary"
+            />
+          </div>
+          <div>
             <label for="repurchaseQuantity">NFT Purchase Price</label>
             <input
               type="text"
               id="repurchaseQuantity"
               v-model="repurchaseQuantity"
               class="text-input focus:border-primary"
+            />
+          </div>
+          <div>
+            <label for="burnCheckbox">Burn purchased tokens: &nbsp;</label>
+            <input type="checkbox" id="burnCheckbox" v-model="burnNfts" />
+          </div>
+          <div>
+            <label for="sameTreasuryManager"
+              >Set treasury account to your address: &nbsp;</label
+            >
+            <input
+              type="checkbox"
+              id="sameTreasuryManager"
+              v-model="sameTreasuryManager"
             />
           </div>
           <button class="mt-5 outlined-btn border-primary" type="submit">
@@ -70,6 +96,9 @@ export default defineComponent({
     // reserve variables
     const tokenMint = ref<string>("");
     const repurchaseQuantity = ref<string>("");
+    const burnNfts = ref<boolean>(false);
+    const treasuryAccount = ref<string>("");
+    const sameTreasuryManager = ref<boolean>(false);
 
     let rc: ReserveClient;
     const newWallet = async () => {
@@ -90,17 +119,45 @@ export default defineComponent({
 
     const initReserve = async () => {
       let reserveAccount = Keypair.generate();
-      rc.initReserve(
-        reserveAccount,
-        new PublicKey(tokenMint.value),
-        parseFloat(repurchaseQuantity.value)
-      );
+      if (treasuryAccount.value !== "") {
+        rc.initReserve(
+          reserveAccount,
+          new PublicKey(tokenMint.value),
+          parseFloat(repurchaseQuantity.value),
+          burnNfts.value,
+          new PublicKey(treasuryAccount.value)
+        );
+      } else {
+        rc.initReserve(
+          reserveAccount,
+          new PublicKey(tokenMint.value),
+          parseFloat(repurchaseQuantity.value),
+          burnNfts.value,
+          new PublicKey(getWallet()!.publicKey!.toString())
+        );
+      }
     };
+
+    watch(burnNfts, () => {
+      if (burnNfts.value) {
+        treasuryAccount.value = "";
+      }
+    });
+
+    watch(sameTreasuryManager, () => {
+      if (sameTreasuryManager.value) {
+        treasuryAccount.value = getWallet()!.publicKey!.toString();
+      }
+    });
+
     return {
       wallet,
       initReserve,
       tokenMint,
       repurchaseQuantity,
+      burnNfts,
+      treasuryAccount,
+      sameTreasuryManager,
     };
   },
 });

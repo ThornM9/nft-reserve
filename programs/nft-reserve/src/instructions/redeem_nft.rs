@@ -1,10 +1,8 @@
 use std::str::FromStr;
 use anchor_lang::prelude::*;
 use solana_safe_math::{SafeMath};
+use anchor_spl::associated_token::{self, AssociatedToken};
 use anchor_spl::token::{self, Token, TokenAccount, Transfer, Burn, Mint};
-use solana_program::{
-    program_option::COption,
-};
 use metaplex_token_metadata::state::Metadata;
 use crate::{state::*, errors::errors::ErrorCode};
 
@@ -19,7 +17,7 @@ pub struct RedeemNft<'info> {
         ],
         bump = token_store_bump,
     )]
-    pub token_store: Account<'info, TokenAccount>,
+    pub token_store: Box<Account<'info, TokenAccount>>,
     #[account(
         seeds = [
             b"token-authority".as_ref(),
@@ -29,17 +27,36 @@ pub struct RedeemNft<'info> {
     )]
     /// CHECK: This is not dangerous because only the key is used and it's a PDA checked by anchor
     pub token_authority: AccountInfo<'info>,
-    #[account(mut)]
-    pub recipient_token_account: Account<'info, TokenAccount>, // where funds are deposited
+
+    /// CHECK: checked in instruction that it's the same account as stored on the reserve
+    pub reserve_token_mint: AccountInfo<'info>,
+    #[account(init_if_needed,
+        associated_token::mint = reserve_token_mint,
+        associated_token::authority = redeemer,
+        payer = redeemer,
+    )]
+    pub recipient_token_account: Box<Account<'info, TokenAccount>>, // where funds are deposited
+
+    /// CHECK: checked in instruction that it's the same account as stored on the reserve
+    pub treasury_account: AccountInfo<'info>,
+    // where nft is deposited. if reserve is burning nfts, then this isn't used
+    #[account(init_if_needed,
+        associated_token::mint = nft_mint,
+        associated_token::authority = treasury_account,
+        payer = redeemer,
+    )]
+    pub treasury_ata: Box<Account<'info, TokenAccount>>, 
 
     #[account(mut)]
-    pub nft_token_account: Account<'info, TokenAccount>, // where nft is taken from
-    #[account(mut)]
+    pub nft_token_account: Box<Account<'info, TokenAccount>>, // where nft is taken from
     pub nft_mint: Box<Account<'info, Mint>>,
 
     #[account(mut)]
     pub redeemer: Signer<'info>,
+    pub rent: Sysvar<'info, Rent>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> RedeemNft<'info> {
@@ -156,7 +173,7 @@ fn assert_whitelisted(ctx: &Context<RedeemNft>) -> Result<()> {
             if !creator.verified {
                 continue;
             }
-
+            msg!("{}",creator.address);
             // check if creator is whitelisted, returns an error if not
             let attempted_proof = assert_valid_whitelist_proof(
                 creator_whitelist_proof_info,
@@ -178,30 +195,15 @@ fn assert_whitelisted(ctx: &Context<RedeemNft>) -> Result<()> {
     Err(error!(ErrorCode::NotWhitelisted))
 }
 
-fn assert_valid_token_account<'info>(nft_token_account: &AccountInfo<'info>, nft_mint: &Pubkey, treasury: &Pubkey) {
-    let token_program = Pubkey::from_str("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA").unwrap();
-    let associated_token_program = Pubkey::from_str("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL").unwrap();
-
-    // verify the owner of the account is the spl token program
-    assert_eq!(nft_token_account.owner, &token_program);
-
-    // verify the PDA seeds match
-    let seeds = &[
-        treasury.as_ref(),
-        token_program.as_ref(),
-        nft_mint.as_ref(),
-    ];
-    let (ata_address, _bump) = Pubkey::find_program_address(seeds, &associated_token_program);
-    assert_eq!(ata_address, nft_token_account.key())
-}
-
-pub fn handler<'a, 'b, 'c, 'info>(ctx: Context<'a,'b,'c,'info, RedeemNft<'info>>, _token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
-    let remaining_accs = &mut ctx.remaining_accounts.iter();
-
-    // check we're burning an nft and not a random spl token
+pub fn handler(ctx: Context<RedeemNft>, _token_store_bump: u8, token_authority_bump: u8) -> Result<()> {
+    // check AccountInfo's passed in
+    assert_eq!(ctx.accounts.treasury_account.key(), ctx.accounts.reserve.treasury_account);
+    assert_eq!(ctx.accounts.reserve_token_mint.key(), ctx.accounts.reserve.token_mint);
+    
+    // check we're redeeming an nft and not a random spl token
     assert_eq!(ctx.accounts.nft_mint.supply, 1);
     assert_eq!(ctx.accounts.nft_mint.decimals, 0);
-    assert_eq!(ctx.accounts.nft_mint.mint_authority, COption::None);
+    // assert_eq!(ctx.accounts.nft_mint.mint_authority, COption::None);
 
     // check that the nft is whitelisted
     let reserve = &*ctx.accounts.reserve;
@@ -213,18 +215,19 @@ pub fn handler<'a, 'b, 'c, 'info>(ctx: Context<'a,'b,'c,'info, RedeemNft<'info>>
 
     if reserve.burn_purchased_tokens {
         // burn the nft
-        token::burn(ctx.accounts.burn_ctx(), 1)?;
+        // token::burn(ctx.accounts.burn_ctx(), 1)?;
     } else {
         // optional account required if sending nfts to the treasury. this should be an ata owned by the treasury account
-        let treasury_ata = next_account_info(remaining_accs)?;
+        let treasury_ata = &ctx.accounts.treasury_ata;
 
         // assert it's a valid account (owned by the treasury, valid TokenAccount struct)
-        assert_valid_token_account(treasury_ata, &ctx.accounts.nft_mint.key(), &ctx.accounts.reserve.treasury_account);
+        assert_eq!(treasury_ata.mint, ctx.accounts.nft_mint.key());
+        assert_eq!(treasury_ata.owner, ctx.accounts.reserve.treasury_account);
         
         // transfer nft to the ata
         let cpi_accounts = Transfer {
             from: ctx.accounts.nft_token_account.to_account_info(),
-            to: treasury_ata.clone(),
+            to: treasury_ata.to_account_info(),
             authority: ctx.accounts.redeemer.to_account_info(),
         };
         token::transfer(

@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
 
 export const RESERVE_PROGRAM_ID = new PublicKey(
-  "8vdqBghr2zC4uGeajcXHHD8XNpuAavtdbYUy5LcGdfm3"
+  "3mk9JnpeBbfdo58S4R4SMHy9m1sFENseiHCJCN9xSUZ1"
 );

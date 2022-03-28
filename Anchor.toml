@@ -1,5 +1,5 @@
 [programs.localnet]
-nft_reserve = "8vdqBghr2zC4uGeajcXHHD8XNpuAavtdbYUy5LcGdfm3"
+nft_reserve = "3mk9JnpeBbfdo58S4R4SMHy9m1sFENseiHCJCN9xSUZ1"
 
 [registry]
 url = "https://anchor.projectserum.com"

@@ -16,6 +16,11 @@ export type NftReserve = {
           "isSigner": true
         },
         {
+          "name": "treasuryAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenAuthority",
           "isMut": false,
           "isSigner": false
@@ -54,6 +59,10 @@ export type NftReserve = {
         {
           "name": "repurchaseQuantity",
           "type": "u64"
+        },
+        {
+          "name": "burnPurchasedTokens",
+          "type": "bool"
         }
       ]
     },
@@ -183,7 +192,22 @@ export type NftReserve = {
           "isSigner": false
         },
         {
+          "name": "reserveTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "recipientTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
           "isMut": true,
           "isSigner": false
         },
@@ -194,7 +218,7 @@ export type NftReserve = {
         },
         {
           "name": "nftMint",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -203,7 +227,22 @@ export type NftReserve = {
           "isSigner": true
         },
         {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -231,6 +270,10 @@ export type NftReserve = {
             "type": "publicKey"
           },
           {
+            "name": "treasuryAccount",
+            "type": "publicKey"
+          },
+          {
             "name": "redeemCount",
             "type": "u64"
           },
@@ -249,6 +292,10 @@ export type NftReserve = {
           {
             "name": "whitelistedCreators",
             "type": "u32"
+          },
+          {
+            "name": "burnPurchasedTokens",
+            "type": "bool"
           }
         ]
       }
@@ -462,6 +509,11 @@ export const IDL: NftReserve = {
           "isSigner": true
         },
         {
+          "name": "treasuryAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenAuthority",
           "isMut": false,
           "isSigner": false
@@ -500,6 +552,10 @@ export const IDL: NftReserve = {
         {
           "name": "repurchaseQuantity",
           "type": "u64"
+        },
+        {
+          "name": "burnPurchasedTokens",
+          "type": "bool"
         }
       ]
     },
@@ -629,7 +685,22 @@ export const IDL: NftReserve = {
           "isSigner": false
         },
         {
+          "name": "reserveTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "recipientTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryAta",
           "isMut": true,
           "isSigner": false
         },
@@ -640,7 +711,7 @@ export const IDL: NftReserve = {
         },
         {
           "name": "nftMint",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -649,7 +720,22 @@ export const IDL: NftReserve = {
           "isSigner": true
         },
         {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -677,6 +763,10 @@ export const IDL: NftReserve = {
             "type": "publicKey"
           },
           {
+            "name": "treasuryAccount",
+            "type": "publicKey"
+          },
+          {
             "name": "redeemCount",
             "type": "u64"
           },
@@ -695,6 +785,10 @@ export const IDL: NftReserve = {
           {
             "name": "whitelistedCreators",
             "type": "u32"
+          },
+          {
+            "name": "burnPurchasedTokens",
+            "type": "bool"
           }
         ]
       }
